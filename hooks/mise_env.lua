@@ -28,9 +28,9 @@ function PLUGIN:MiseEnv(ctx)
     -- Build template, but skip secrets already in environment with same ref
     local template_lines = {}
     for key, ref in pairs(secrets) do
-        -- Respect false: skip this key entirely
+        -- Respect false: explicitly unset this key
         if ref == false then
-            -- Do nothing - don't set, don't fetch
+            table.insert(env, {key = key, value = false})
         else
             local existing_val = os.getenv(key)
             local existing_ref = os.getenv(ref_key(key))
