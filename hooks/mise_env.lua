@@ -35,6 +35,11 @@ function PLUGIN:MiseEnv(ctx)
             local existing_val = os.getenv(key)
             local existing_ref = os.getenv(ref_key(key))
 
+            -- Treat "false" string as unset (mise convention)
+            if existing_val == "false" then
+                existing_val = nil
+            end
+
             if existing_val and existing_val ~= "" and existing_ref == ref then
                 -- Already set with same ref, reuse it
                 table.insert(env, {key = key, value = existing_val})
