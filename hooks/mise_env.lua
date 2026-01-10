@@ -1,5 +1,9 @@
 local cmd = require("cmd")
 
+local function ref_key(key)
+    return "_MISE_ENV_OP_REF_" .. key
+end
+
 function PLUGIN:MiseEnv(ctx)
     -- Validate options
     if not ctx.options then
@@ -21,17 +25,25 @@ function PLUGIN:MiseEnv(ctx)
     local expected = {}
     local needs_fetch = {}
 
-    -- Build template, but skip secrets already in environment
+    -- Build template, but skip secrets already in environment with same ref
     local template_lines = {}
     for key, ref in pairs(secrets) do
-        local existing = os.getenv(key)
-        if existing and existing ~= "" then
-            -- Already set, reuse it
-            table.insert(env, {key = key, value = existing})
+        -- Respect false: skip this key entirely
+        if ref == false then
+            -- Do nothing - don't set, don't fetch
         else
-            expected[key] = ref
-            needs_fetch[key] = true
-            table.insert(template_lines, key .. "={{ " .. ref .. " }}")
+            local existing_val = os.getenv(key)
+            local existing_ref = os.getenv(ref_key(key))
+
+            if existing_val and existing_val ~= "" and existing_ref == ref then
+                -- Already set with same ref, reuse it
+                table.insert(env, {key = key, value = existing_val})
+                table.insert(env, {key = ref_key(key), value = ref})
+            else
+                expected[key] = ref
+                needs_fetch[key] = true
+                table.insert(template_lines, key .. "={{ " .. ref .. " }}")
+            end
         end
     end
 
@@ -63,6 +75,8 @@ function PLUGIN:MiseEnv(ctx)
                 io.stderr:write("[mise-env-op] failed to resolve: " .. k .. " (" .. expected[k] .. ")\n")
             else
                 table.insert(env, {key = k, value = v})
+                -- Store the ref so we can detect changes in child directories
+                table.insert(env, {key = ref_key(k), value = expected[k]})
             end
         end
     end
