@@ -3,16 +3,16 @@ local cmd = require("cmd")
 function PLUGIN:MiseEnv(ctx)
     local secrets = ctx.options.secrets or {}
     local env = {}
-    local keys = {}
+    local expected = {}
 
     -- Build template for op inject: KEY={{ op://ref }}
     local template_lines = {}
     for key, ref in pairs(secrets) do
-        table.insert(keys, key)
+        expected[key] = ref
         table.insert(template_lines, key .. "={{ " .. ref .. " }}")
     end
 
-    if #keys == 0 then
+    if #template_lines == 0 then
         return env
     end
 
@@ -21,10 +21,24 @@ function PLUGIN:MiseEnv(ctx)
     local output = cmd.exec("printf '%s' '" .. template:gsub("'", "'\\''") .. "' | op inject")
 
     -- Parse output: KEY=value
+    local found = {}
     for line in output:gmatch("[^\n]+") do
         local k, v = line:match("^([^=]+)=(.*)$")
         if k and v then
-            table.insert(env, {key = k, value = v})
+            found[k] = true
+            -- Check for unresolved template (op inject leaves {{ }} on error)
+            if v:match("^{{.*}}$") then
+                io.stderr:write("[mise-env-op] failed to resolve: " .. k .. " (" .. expected[k] .. ")\n")
+            else
+                table.insert(env, {key = k, value = v})
+            end
+        end
+    end
+
+    -- Warn about completely missing keys
+    for key, ref in pairs(expected) do
+        if not found[key] then
+            io.stderr:write("[mise-env-op] missing from output: " .. key .. " (" .. ref .. ")\n")
         end
     end
 
