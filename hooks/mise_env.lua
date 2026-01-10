@@ -1,44 +1,5 @@
 local cmd = require("cmd")
 
-local function get_secrets_for_env(secrets_config)
-    if not secrets_config then
-        return nil
-    end
-
-    -- Check if secrets_config is a flat table (key = "op://...") or nested by environment
-    local has_env_keys = false
-    local has_op_refs = false
-    for key, val in pairs(secrets_config) do
-        if type(val) == "table" then
-            has_env_keys = true
-        elseif type(val) == "string" and val:match("^op://") then
-            has_op_refs = true
-        end
-    end
-
-    -- Flat structure: { KEY = "op://..." }
-    if has_op_refs and not has_env_keys then
-        return secrets_config
-    end
-
-    -- Nested structure: { development = { KEY = "op://..." }, production = { ... } }
-    if has_env_keys then
-        local mise_env = os.getenv("MISE_ENV") or "development"
-        local env_secrets = secrets_config[mise_env]
-        if env_secrets then
-            return env_secrets
-        end
-        -- Fall back to "default" if current env not found
-        if secrets_config["default"] then
-            return secrets_config["default"]
-        end
-        io.stderr:write("[mise-env-op] no secrets for MISE_ENV=" .. mise_env .. " (and no 'default' fallback)\n")
-        return nil
-    end
-
-    return nil
-end
-
 function PLUGIN:MiseEnv(ctx)
     -- Validate options
     if not ctx.options then
@@ -51,11 +12,7 @@ function PLUGIN:MiseEnv(ctx)
         error("[mise-env-op] 'secrets' must be a table")
     end
 
-    -- Get secrets for current environment
-    local secrets = get_secrets_for_env(ctx.options.secrets)
-    if not secrets then
-        return {}
-    end
+    local secrets = ctx.options.secrets
 
     -- Optional account for multi-account 1Password setups
     local account = ctx.options.account

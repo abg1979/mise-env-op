@@ -7,7 +7,6 @@ A [mise](https://mise.jdx.dev/) environment plugin that fetches secrets from 1Pa
 - Secrets stay in memory, never touch disk
 - Single `op inject` call for all secrets (fast)
 - Skips fetch if env var already set (nested shells are instant)
-- Per-environment secrets (development, production, etc.)
 - Multi-account 1Password support
 
 ## Requirements
@@ -39,23 +38,6 @@ account = "my.1password.com"
 
 [env._.mise-env-op.secrets]
 MY_API_KEY = "op://vault/item/field"
-```
-
-### Per-environment secrets
-
-Secrets can vary by `MISE_ENV`. Falls back to `default` if the current environment isn't found.
-
-```toml
-[env._.mise-env-op.secrets.default]
-LOG_LEVEL = "op://vault/config/log_level"
-
-[env._.mise-env-op.secrets.development]
-API_KEY = "op://dev-vault/api/key"
-DATABASE_URL = "op://dev-vault/db/url"
-
-[env._.mise-env-op.secrets.production]
-API_KEY = "op://prod-vault/api/key"
-DATABASE_URL = "op://prod-vault/db/url"
 ```
 
 ## Performance
