@@ -39,6 +39,11 @@ account = "my.1password.com"
 [env._.mise-env-op.secrets]
 MY_API_KEY = "op://vault/item/field"
 ```
+### Optional: enable debug logging
+```toml
+[env._.mise-env-op]
+debug = true
+```
 
 ## Performance
 
@@ -59,6 +64,32 @@ If a secret reference is invalid:
 ```
 [mise-env-op] failed to resolve: MY_KEY (op://vault/bad/path)
 ```
+
+### Debug Logging
+
+Debug logging can be enabled in two ways:
+
+**1. Via configuration in `mise.toml`:**
+```toml
+[env._.mise-env-op]
+debug = true
+```
+
+**2. Via environment variable:**
+```bash
+# Bash/Zsh
+export MISE_ENV_OP_DEBUG=1
+
+# PowerShell
+$env:MISE_ENV_OP_DEBUG = "1"
+```
+
+When enabled, the plugin will output detailed debug information to stderr, including:
+- Configuration validation
+- Secret processing decisions
+- `op inject` command execution
+- Secret resolution status
+- Environment variable assignments
 
 ## License
 
