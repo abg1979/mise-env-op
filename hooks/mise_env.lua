@@ -2,12 +2,13 @@ local cmd = require("cmd")
 
 local log = {
     enabled = false,
-    debug = function(msg)
-        if log.enabled then
-            io.stderr:write("[mise-env-op][debug] " .. msg .. "\n")
-        end
-    end
 }
+
+function log.debug(msg)
+    if log.enabled then
+        io.stderr:write("[mise-env-op][debug] " .. msg .. "\n")
+    end
+end
 
 local function ref_key(key)
     return "_MISE_ENV_OP_REF_" .. key
