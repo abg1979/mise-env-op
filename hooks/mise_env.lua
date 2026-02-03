@@ -23,7 +23,7 @@ end
 
 function PLUGIN:MiseEnv(ctx)
     -- Enable debug logging from env var or config
-    local env_debug = os.getenv("MISE_ENV_OP_DEBUG")
+    local env_debug = os.getenv("MISE_DEBUG")
     local config_debug = ctx.options and ctx.options.debug
     log.enabled = (env_debug == "1" or env_debug == "true") or (config_debug == true or config_debug == "true")
 

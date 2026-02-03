@@ -78,10 +78,10 @@ debug = true
 **2. Via environment variable:**
 ```bash
 # Bash/Zsh
-export MISE_ENV_OP_DEBUG=1
+export MISE_DEBUG=1
 
 # PowerShell
-$env:MISE_ENV_OP_DEBUG = "1"
+$env:MISE_DEBUG = "1"
 ```
 
 When enabled, the plugin will output detailed debug information to stderr, including:
